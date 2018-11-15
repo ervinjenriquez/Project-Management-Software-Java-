@@ -1,4 +1,6 @@
 import java.util.*;
+import java.awt.*;
+import javax.swing.*;
 
 public class ProjectClient {
 
@@ -8,8 +10,7 @@ public class ProjectClient {
     static ArrayList<Project> list = new ArrayList<Project>();
 
     public static void main(String[] args) {
-
-        while(loop) {
+        while (loop) {
             menu();
             System.out.println("Enter a command from the list above (q to quit): \nA project must be selected before modifying it.");
             String command = user.next();
@@ -45,6 +46,9 @@ public class ProjectClient {
                 case "rt":
                     changeReservation();
                     break;
+                case "q":
+                    quit();
+                    break;
                 default:
                     System.out.println("Command not recognized.");
             }
@@ -71,12 +75,12 @@ public class ProjectClient {
         } else {
             System.out.println("Enter the name of the project you want.");
             String title = user.next();
-            System.out.println("Enter the number of hours attached to that project.");
-            int hours = user.nextInt();
+            System.out.println("Enter the version number attached to that project. (Use command sl to see what version is attached to it)");
+            int version = user.nextInt();
             System.out.println("Searching...");
 
             for (int i = 0; i < list.size(); i++) {
-                if (title.equalsIgnoreCase(list.get(i).getName()) && hours == list.get(i).getHours()) {
+                if (title.equalsIgnoreCase(list.get(i).getName()) && version == list.get(i).getVersion()) {
                     project = list.get(i);
                     System.out.println("Project found & selected.");
                 }
@@ -88,7 +92,7 @@ public class ProjectClient {
         if (project == null) {
             System.out.println("Sorry, there are currently no projects. Please create a project.");
         } else {
-            System.out.println("The current project is : " + project.getName());
+            System.out.println("The current project is : " + project.getName() + "." + project.getVersion());
         }
     }
 
@@ -97,6 +101,7 @@ public class ProjectClient {
             System.out.println("Sorry, there are currently no projects. Please create a project.");
         } else {
             System.out.println("Name: " + project.getName());
+            System.out.println("Version: " + project.getVersion());
             System.out.println("Description: " + project.getDescription());
             System.out.println("Hours: " + project.getHours());
             System.out.println("Reserved: " + project.isReserved());
@@ -108,13 +113,13 @@ public class ProjectClient {
         if (list.size() == 0) {
             System.out.println("Sorry, there are currently no projects. Please create a project.");
         } else {
-            System.out.println("There are " + list.size() + " projects in total.");
+            System.out.println("\nThere are " + list.size() + " projects in total.");
             System.out.println("[LIST START]");
             for (int i = 0; i < list.size(); i++) {
-                if (i%3 == 0 && i != 0) {
-                    System.out.print("\n" + list.get(i).getName() + ", ");
+                if (i % 3 == 0 && i != 0) {
+                    System.out.print("\n" + list.get(i).getName() + "." + list.get(i).getVersion() + ", ");
                 } else {
-                    System.out.print(list.get(i).getName() + ", ");
+                    System.out.print(list.get(i).getName() + "." + list.get(i).getVersion() + ", ");
                 }
             }
             System.out.println("\n[LIST END]");
@@ -123,18 +128,49 @@ public class ProjectClient {
 
     public static void add() {
         System.out.println("What is the name of the task?");
-        String name = user.next();
-        System.out.println("What is the description of the task?");
-        String description = user.next();
-        System.out.println("How many hours does the task allocate?");
-        int hours = user.nextInt();
+        user.nextLine();
+        String name = user.nextLine();
 
-        Project proj = new Project(name, description, hours);
-        list.add(proj);
-        project = proj;
+        if (version(name) > 0) {
+            System.out.println("This name already exists");
+            System.out.println("Would you like to create a 'versioned' project? (Y/N)");
+            String n = user.next();
 
-        System.out.println("Task created.");
-        showCurrent();
+            if (n.equalsIgnoreCase("yes") || n.equalsIgnoreCase("y")) {
+                version(name);
+                System.out.println("The name will now be, '" + name + "." + version(name) + "'");
+
+                user.nextLine();
+                System.out.println("What is the description of the task?");
+                String description = user.nextLine();
+                System.out.println("How many hours does the task allocate?");
+                int hours = user.nextInt();
+
+                Project proj = new Project(name, description, hours);
+                list.add(proj);
+                project = proj;
+
+                System.out.println("Task created.");
+                showCurrent();
+
+            } else if (n.equalsIgnoreCase("no") || n.equalsIgnoreCase("n")) {
+                System.out.println("Try creating a new task with a different name.");
+                add();
+            }
+
+        } else {
+            System.out.println("What is the description of the task?");
+            String description = user.nextLine();
+            System.out.println("How many hours does the task allocate?");
+            int hours = user.nextInt();
+
+            Project proj = new Project(name, description, hours);
+            list.add(proj);
+            project = proj;
+
+            System.out.println("Task created.");
+            showCurrent();
+        }
     }
 
     public static void delete() {
@@ -142,8 +178,8 @@ public class ProjectClient {
             System.out.println("Sorry, there are currently no projects. Please create a project.");
         } else {
             for (int i = 0; i < list.size(); i++) {
-                if (project.getName().equalsIgnoreCase(list.get(i).getName())) {
-                    System.out.println("Deleted task named: " + list.get(i).getName());
+                if (project.getName().equalsIgnoreCase(list.get(i).getName()) && project.getVersion() == (list.get(i).getVersion())) {
+                    System.out.println("Deleted task named: " + list.get(i).getName() + list.get(i).getVersion());
                     list.remove(i);
                 }
             }
@@ -158,6 +194,7 @@ public class ProjectClient {
             System.out.println("Invalid name.");
         } else {
             String oldName = project.getName();
+            version(name);
             project.setName(name);
             System.out.println("Name successfully changed from " + oldName + " to " + name);
         }
@@ -165,6 +202,7 @@ public class ProjectClient {
 
     public static void changeDescription() {
         System.out.println("What would you like to change the description to?");
+        user.nextLine();
         String description = user.nextLine();
 
         if (description == null) {
@@ -201,5 +239,22 @@ public class ProjectClient {
         } else {
             System.out.println("Invalid boolean input.");
         }
+    }
+
+    public static void quit() {
+        loop = false;
+        System.out.println("Successfully Quit");
+    }
+
+    public static int version(String in) {
+        int j = 0;
+        for (int i = 0; i < list.size(); i++) {
+            if (in.equalsIgnoreCase(list.get(i).getName())) {
+                j++;
+                list.get(i).setVersion(j);
+            }
+        }
+        return j;
+
     }
 }
