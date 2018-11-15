@@ -5,6 +5,7 @@ public class Project {
     private String name;
     private String description;
     private int hours;
+    private int version;
     private boolean reserved;
 
     public Project (String name, String description, int hours) {
@@ -12,6 +13,8 @@ public class Project {
         this.description = description;
         this.hours = hours;
         reserved = false;
+        version = 0;
+
     }
 
     //Getters
@@ -25,6 +28,7 @@ public class Project {
     public boolean isReserved() {
         return reserved;
     }
+    public int getVersion() {return version;}
 
     //Setters
     public void setName(String name){
@@ -39,5 +43,16 @@ public class Project {
     public void setReserved(boolean reserved) {
         this.reserved = reserved;
     }
+    public void setVersion(int version) { this.version = version;}
+
+//    public int compareTo(Project in) {
+//        if (name.compareTo(in.getName()) > 0) {
+//            return 1;
+//        } else if (name.compareTo(in.getName()) < 0) {
+//            return -1;
+//        } else {
+//            if (ver)
+//        }
+//    }
 
 }
